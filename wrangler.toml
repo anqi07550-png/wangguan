@@ -55,6 +55,10 @@ CUSTOM_ANTHROPIC_MESSAGES_PATH = "messages"
 # GUIDE_DOG_API_KEY, CF_AIG_TOKEN.
 # D1 binding is auto-filled by `npm run setup:cloudflare`.
 
+[[d1_databases]]
+binding = "DB"
+database_name = "companion_memory_proxy"
+database_id = "13d2455c-6558-4188-b1b7-8495befe2546"
 [[vectorize]]
 binding = "VECTORIZE"
 index_name = "memo-kb"
