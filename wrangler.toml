@@ -14,7 +14,6 @@ binding = "AI"
 # Visible model knobs. These are intentionally in wrangler.toml so they show
 # up in Cloudflare Variables and can be changed without touching code.
 PUBLIC_MODEL_NAME = "companion"
-CHAT_MODEL = "deepseek/deepseek-v4-pro"
 MEMORY_FILTER_MODEL = "workers-ai/@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 MEMORY_FILTER_MAX_CANDIDATES = "12"
 MEMORY_FILTER_MAX_OUTPUT = "5"
@@ -40,7 +39,7 @@ DREAM_MAX_RUNS = "10"
 DREAM_MAX_TOKENS = "8000"
 ENABLE_DAILY_SUMMARY_MEMORY = "false"
 ANTHROPIC_THINKING_ENABLED = "false"
-ANTHROPIC_THINKING_BUDGET = "1024"
+ANTHROPIC_THINKING_BUDGET = "10000"
 ANTHROPIC_CACHE_ENABLED = "true"
 ANTHROPIC_AUTO_CACHE_ENABLED = "true"
 ANTHROPIC_ROLLING_CACHE_ENABLED = "true"
@@ -48,7 +47,7 @@ ANTHROPIC_CACHE_TTL = "5m"
 # For custom Anthropic-compatible providers whose base_url already ends in /v1,
 # keep this as "messages". If the base_url is only the root domain, use
 # "v1/messages".
-CUSTOM_ANTHROPIC_MESSAGES_PATH = "messages"
+CUSTOM_ANTHROPIC_MESSAGES_PATH = "v1/messages"
 
 # Private/account-specific variables live in the Cloudflare Dashboard:
 # AI_GATEWAY_BASE_URL, CHATBOX_API_KEY, MEMORY_MCP_API_KEY,
