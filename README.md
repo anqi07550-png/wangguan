@@ -1,6 +1,6 @@
 # Aelios：给 AI 用的长期记忆网关
 
-Aelios 是一个跑在 Cloudflare Workers 上的 AI 记忆系统。你把 Chatbox、Cherry Studio、网页前端、IM bot 或自己的脚本接到它，它就可以一边转发聊天，一边把重要信息整理成长期记忆。
+Aelios 是 一个跑在 Cloudflare Workers 上的 AI 记忆系统。你把 Chatbox、Cherry Studio、网页前端、IM bot 或自己的脚本接到它，它就可以一边转发聊天，一边把重要信息整理成长期记忆。
 
 简单说：**它让任何 AI 都能长期记住你的偏好、规则、关系事实、项目背景和重要原文。** 不只是这一轮聊天记得你，而是换窗口、换客户端、换模型之后，记忆也能跟着走。
 
