@@ -4,7 +4,7 @@ import { getOrCreateConversation } from "../db/conversations";
 import { listMemories } from "../db/memories";
 import { saveAssistantMessage, saveUserMessages } from "../db/messages";
 import { saveUsageLog } from "../db/usageLogs";
-import { extractLastUserText, injectMemoryPatchAsSystemMessage, selectMemoriesForInjection } from "../memory/inject";
+import { extractLastUserText, formatMemoryPatch, injectMemoryPatchAsSystemMessage, selectMemoriesForInjection } from "../memory/inject";
 import { toMemoryApiRecord } from "../memory/search";
 import { assemble } from "../assembler/assemble";
 import { PERSONA_MEMORY_TYPES } from "../assembler/types";
@@ -22,7 +22,7 @@ import { streamAnthropicToOpenAI } from "../proxy/streamAnthropic";
 import { streamOpenAIWithTee } from "../proxy/streamOpenAI";
 import { CONTENT_RULES } from "../preset/regexRules";
 import { applyRegexRules } from "../preset/regexPipeline";
-import type { Env, MemoryApiRecord, OpenAIChatRequest, OpenAIChatResponse } from "../types";
+import type { Env, MemoryApiRecord, OpenAIChatMessage, OpenAIChatRequest, OpenAIChatResponse } from "../types";
 import { openAiError } from "../utils/json";
 import { hasImageContent } from "../utils/messages";
 
@@ -48,6 +48,25 @@ export function hasTools(body: OpenAIChatRequest): boolean {
 /** Determine whether this request needs the tool-call passthrough path. */
 export function hasToolRound(body: OpenAIChatRequest): boolean {
   return hasTools(body) || hasToolContent(body);
+}
+
+// Tool-path fallback (assembler not used here yet): inject pinned persona as a
+// leading system message, then the RAG memory patch after the existing system
+// messages. If persona is empty this degrades to injectMemoryPatchAsSystemMessage.
+function injectPersonaAndMemoryPatches(
+  request: OpenAIChatRequest,
+  pinnedPersonaMemories: MemoryApiRecord[],
+  memories: MemoryApiRecord[]
+): OpenAIChatRequest {
+  const personaPatch = formatMemoryPatch(pinnedPersonaMemories);
+  if (!personaPatch) return injectMemoryPatchAsSystemMessage(request, memories);
+
+  const personaMessage: OpenAIChatMessage = { role: "system", content: personaPatch };
+  const withPersona: OpenAIChatRequest = {
+    ...request,
+    messages: [personaMessage, ...request.messages]
+  };
+  return injectMemoryPatchAsSystemMessage(withPersona, memories);
 }
 
 /**
@@ -137,6 +156,7 @@ export async function handleChatCompletions(
     if (provider === "anthropic") {
       if (hasToolRound(body)) {
         // Tool call passthrough: send tools/tool_choice to the model directly.
+        // Native request keeps the stable memory pack; assembler integration is tracked separately.
         const anthropicRequest = await buildAnthropicNativeRequest(body, {
           env,
           targetModel,
@@ -160,8 +180,9 @@ export async function handleChatCompletions(
       }
     } else {
       if (hasToolRound(body)) {
-        // Tool call passthrough for OpenAI-compat providers.
-        const patchedBody = injectMemoryPatchAsSystemMessage(body, memories);
+        // Tool path: assembler not wired here yet; inject persona + RAG patches
+        // directly so pinned persona is not lost on the OpenAI tool fallback.
+        const patchedBody = injectPersonaAndMemoryPatches(body, pinnedPersonaMemories, memories);
         const upstreamRequest = buildOpenAICompatRequest(patchedBody, targetModel);
         upstream = await callOpenAICompat(env, upstreamRequest);
       } else {
