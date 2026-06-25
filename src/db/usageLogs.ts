@@ -33,7 +33,8 @@ export async function saveUsageLog(
       input.model,
       usage.prompt_tokens ?? usage.input_tokens ?? null,
       usage.completion_tokens ?? usage.output_tokens ?? null,
-      usage.cache_read_input_tokens ?? null,
+      usage.cache_read_input_tokens
+        ?? (typeof usage.prompt_cache_hit_tokens === "number" ? usage.prompt_cache_hit_tokens : null),
       usage.cache_creation_input_tokens ?? null,
       input.cacheMode ?? null,
       input.cacheTtl ?? null,
